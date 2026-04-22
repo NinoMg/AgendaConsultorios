@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel — {{ nombre_consultorio }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-icon">🏥</div>
+    <div>
+      <h1>{{ nombre_consultorio }}</h1>
+      <p>Panel de gestión de turnos</p>
+    </div>
+    <div class="header-links">
+      <a href="/">🌐 Ver página</a>
+      <a href="/logout" class="btn-logout">Cerrar sesión</a>
+    </div>
+  </header>
+
+  <div class="container-wide">
+
+    <!-- Alertas -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alertas" style="margin-top: 20px;">
+          {% for category, message in messages %}
+            <div class="alerta alerta-{{ category }}">
+              {% if category == 'info' %}ℹ️{% elif category == 'success' %}✅{% elif category == 'danger' %}❌{% endif %}
+              <span>{{ message|safe }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Stats -->
+    <div class="stats" style="margin-top: 28px;">
+      <div class="stat-card">
+        <div class="stat-numero">{{ turnos|length }}</div>
+        <div class="stat-label">Turnos activos</div>
+      </div>
+      <div class="stat-card">
+        {% set hoy = namespace(count=0) %}
+        {% for t in turnos %}
+          {% if t[2] == today %}{% set hoy.count = hoy.count + 1 %}{% endif %}
+        {% endfor %}
+        <div class="stat-numero">{{ turnos|selectattr(2, 'equalto', today)|list|length if today else '—' }}</div>
+        <div class="stat-label">Turnos hoy</div>
+      </div>
+      <div class="stat-card">
+        {% set proximos = turnos[:3]|length %}
+        <div class="stat-numero">{{ proximos }}</div>
+        <div class="stat-label">Próximos a confirmar</div>
+      </div>
+    </div>
+
+    <!-- Tabla de turnos -->
+    <div class="card">
+      <h2 class="card-title">📋 Turnos programados</h2>
+
+      {% if turnos %}
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Paciente</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Teléfono</th>
+                <th>Obra Social</th>
+                <th>Motivo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in turnos %}
+              <tr>
+                <td style="color: var(--texto-suave); font-size: 0.85rem;">{{ t[0] }}</td>
+                <td><strong>{{ t[1] }}</strong></td>
+                <td>{{ t[2] }}</td>
+                <td><strong>{{ t[3] }}</strong></td>
+                <td>
+                  <a href="https://wa.me/549{{ t[4] }}" target="_blank" style="color: var(--verde); text-decoration: none;">
+                    📱 {{ t[4] }}
+                  </a>
+                </td>
+                <td>
+                  {% if t[6] %}
+                    <span class="badge">{{ t[6] }}</span>
+                  {% else %}
+                    <span class="badge badge-particular">Particular</span>
+                  {% endif %}
+                </td>
+                <td style="color: var(--texto-suave); font-size: 0.88rem;">
+                  {{ t[5] or '—' }}
+                </td>
+                <td>
+                  <div class="td-acciones">
+                    <a href="https://wa.me/549{{ t[4] }}?text={{ ('Hola ' + t[1] + ', le confirmamos su turno para el ' + t[2] + ' a las ' + t[3] + '. ¡Lo esperamos!')|urlencode }}"
+                       target="_blank" class="btn btn-whatsapp">
+                      ✅ Confirmar
+                    </a>
+                    <a href="/cancelar/{{ t[0] }}"
+                       class="btn btn-danger"
+                       onclick="return confirm('¿Cancelar el turno de {{ t[1] }}?')">
+                      ❌ Cancelar
+                    </a>
+                    <a href="/eliminar/{{ t[0] }}"
+                       class="btn btn-danger"
+                       onclick="return confirm('¿Eliminar permanentemente el turno de {{ t[1] }}?')"
+                       style="background: #fdecea;">
+                      🗑️
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <p>No hay turnos programados por el momento.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</body>
+</html>

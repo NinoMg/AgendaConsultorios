@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ nombre_consultorio }} — Reservá tu turno</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-icon">🏥</div>
+    <div>
+      <h1>{{ nombre_consultorio }}</h1>
+      <p>Reserva de turnos online</p>
+    </div>
+    <div class="header-links">
+      <a href="/login">🔐 Panel médico</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Alertas -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alertas">
+          {% for category, message in messages %}
+            <div class="alerta alerta-{{ category }}">
+              {% if category == 'warning' %}⚠️{% elif category == 'danger' %}❌{% elif category == 'success' %}✅{% else %}ℹ️{% endif %}
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Formulario -->
+    <div class="card">
+      <h2 class="card-title">📅 Reservá tu turno</h2>
+      <form action="/agregar" method="POST">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label for="nombre">Nombre y apellido <span class="required">*</span></label>
+            <input type="text" id="nombre" name="nombre" placeholder="Ej: María González" required>
+          </div>
+
+          <div class="form-group">
+            <label for="telefono">Teléfono <span class="required">*</span></label>
+            <input type="tel" id="telefono" name="telefono" placeholder="Ej: 2604123456" required>
+          </div>
+
+          <div class="form-group">
+            <label for="fecha">Fecha <span class="required">*</span></label>
+            <input type="date" id="fecha" name="fecha" required>
+          </div>
+
+          <div class="form-group">
+            <label for="hora">Hora <span class="required">*</span></label>
+            <select id="hora" name="hora" required>
+              <option value="">Seleccioná un horario</option>
+              <option value="08:00">08:00</option>
+              <option value="08:30">08:30</option>
+              <option value="09:00">09:00</option>
+              <option value="09:30">09:30</option>
+              <option value="10:00">10:00</option>
+              <option value="10:30">10:30</option>
+              <option value="11:00">11:00</option>
+              <option value="11:30">11:30</option>
+              <option value="12:00">12:00</option>
+              <option value="14:00">14:00</option>
+              <option value="14:30">14:30</option>
+              <option value="15:00">15:00</option>
+              <option value="15:30">15:30</option>
+              <option value="16:00">16:00</option>
+              <option value="16:30">16:30</option>
+              <option value="17:00">17:00</option>
+              <option value="17:30">17:30</option>
+              <option value="18:00">18:00</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="obra_social">Obra social / Prepaga</label>
+            <input type="text" id="obra_social" name="obra_social" placeholder="Ej: OSDE, Swiss Medical, Particular">
+          </div>
+
+          <div class="form-group">
+            <label for="motivo">Motivo de consulta</label>
+            <input type="text" id="motivo" name="motivo" placeholder="Ej: Control, dolor de cabeza...">
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          📲 Confirmar turno por WhatsApp
+        </button>
+      </form>
+    </div>
+
+    <div class="footer">
+      Al confirmar, se abrirá WhatsApp para completar la reserva con el médico.
+    </div>
+
+  </div>
+
+  <script>
+    // Bloquear fechas pasadas
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha').setAttribute('min', hoy);
+  </script>
+
+</body>
+</html>
