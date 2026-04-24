@@ -1,115 +1,632 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ nombre_consultorio }} — Reservá tu turno</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #f0f4f8;
+      --white:    #ffffff;
+      --border:   #dde3ea;
+      --blue:     #2563eb;
+      --blue-lt:  #eff6ff;
+      --blue-dk:  #1d4ed8;
+      --red:      #dc2626;
+      --green:    #16a34a;
+      --orange:   #ea580c;
+      --text:     #1e293b;
+      --muted:    #64748b;
+      --radius:   12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--blue);
+    }
+    .logo-icon {
+      width: 38px; height: 38px;
+      background: var(--blue);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .header-link {
+      font-size: .85rem;
+      color: var(--muted);
+      text-decoration: none;
+      padding: .4rem .9rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: all .15s;
+    }
+    .header-link:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* ── FLASH ── */
+    .flashes {
+      position: fixed; top: 78px; right: 1.5rem;
+      z-index: 200; display: flex; flex-direction: column; gap: .5rem;
+    }
+    .flash {
+      padding: .75rem 1.2rem; border-radius: 10px;
+      font-size: .875rem; font-weight: 500; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+      animation: slideIn .25s ease;
+    }
+    .flash.success { background: var(--green); color: #fff; }
+    .flash.danger  { background: var(--red);   color: #fff; }
+    .flash.warning { background: var(--orange); color: #fff; }
+    .flash.info    { background: var(--blue);  color: #fff; }
+    @keyframes slideIn {
+      from { transform: translateX(40px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    /* ── STEPS ── */
+    .steps {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+    .step {
+      flex: 1;
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: .4rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: all .2s;
+    }
+    .step.active {
+      background: var(--blue-lt);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+    .step.done {
+      background: #f0fdf4;
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* ── FORM ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+    .form-group { margin-bottom: .9rem; }
+    label {
+      display: block;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: .35rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: .65rem .9rem;
+      font-size: .9rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+    textarea { resize: vertical; min-height: 70px; }
+
+    /* ── CALENDARIO DE HORARIOS ── */
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .cal-btn {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all .15s;
+    }
+    .cal-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .cal-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .cal-fecha-label {
+      font-size: .95rem;
+      font-weight: 600;
+      min-width: 180px;
+      text-align: center;
+    }
+
+    /* Mini-semana (7 días) */
+    .semana {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: .4rem;
+      margin-bottom: 1.25rem;
+    }
+    .dia-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .15rem;
+      padding: .4rem .2rem;
+      border-radius: 9px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      background: var(--white);
+      transition: all .15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .dia-btn .dia-nombre { font-size: .62rem; font-weight: 600; color: var(--muted); text-transform: uppercase; }
+    .dia-btn .dia-num    { font-size: 1rem;   font-weight: 700; }
+    .dia-btn .dia-libre  { font-size: .6rem;  color: var(--muted); }
+    .dia-btn:hover:not(.seleccionado):not(.lleno) { border-color: var(--blue); }
+    .dia-btn.seleccionado { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .dia-btn.seleccionado .dia-nombre,
+    .dia-btn.seleccionado .dia-libre  { color: rgba(255,255,255,.75); }
+    .dia-btn.lleno { background: #fef2f2; border-color: #fecaca; cursor: not-allowed; }
+    .dia-btn.lleno .dia-nombre,
+    .dia-btn.lleno .dia-num,
+    .dia-btn.lleno .dia-libre { color: #fca5a5; }
+
+    /* Grid de horarios */
+    .horarios-titulo {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: .65rem;
+    }
+    .horarios-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .5rem;
+      margin-bottom: 1.25rem;
+    }
+    @media (max-width: 400px) { .horarios-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .hora-slot {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: .55rem .3rem;
+      text-align: center;
+      font-size: .85rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--white);
+      transition: all .15s;
+      position: relative;
+    }
+    .hora-slot:hover:not(.ocupado):not(.pasado) {
+      border-color: var(--blue);
+      background: var(--blue-lt);
+      color: var(--blue);
+    }
+    .hora-slot.selected {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+      font-weight: 700;
+    }
+    .hora-slot.ocupado {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #fca5a5;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+    .hora-slot.ocupado::after {
+      content: '✕';
+      font-size: .65rem;
+      position: absolute;
+      top: 2px; right: 4px;
+      color: #fca5a5;
+    }
+    .hora-slot.pasado {
+      opacity: .3;
+      cursor: not-allowed;
+    }
+
+    .leyenda {
+      display: flex;
+      gap: 1rem;
+      font-size: .75rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .leyenda span { display: flex; align-items: center; gap: .3rem; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .dot-libre   { background: var(--blue); }
+    .dot-ocupado { background: #fca5a5; border: 1px solid #fecaca; }
+    .dot-pasado  { background: #e2e8f0; }
+
+    /* ── RESUMEN ── */
+    .resumen {
+      background: var(--blue-lt);
+      border: 1.5px solid #bfdbfe;
+      border-radius: 10px;
+      padding: .85rem 1rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .resumen.visible { display: block; }
+    .resumen p { font-size: .9rem; color: var(--blue-dk); font-weight: 500; }
+    .resumen strong { color: var(--blue); }
+
+    /* ── SUBMIT ── */
+    .btn-submit {
+      width: 100%;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: .85rem;
+      font-size: .95rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+    }
+    .btn-submit:hover  { background: var(--blue-dk); }
+    .btn-submit:active { transform: scale(.98); }
+    .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+  </style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="header-icon">🏥</div>
-    <div>
-      <h1>{{ nombre_consultorio }}</h1>
-      <p>Reserva de turnos online</p>
-    </div>
-    <div class="header-links">
-      <a href="/login">🔐 Panel médico</a>
-    </div>
-  </header>
-
-  <div class="container">
-
-    <!-- Alertas -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="alertas">
-          {% for category, message in messages %}
-            <div class="alerta alerta-{{ category }}">
-              {% if category == 'warning' %}⚠️{% elif category == 'danger' %}❌{% elif category == 'success' %}✅{% else %}ℹ️{% endif %}
-              <span>{{ message }}</span>
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    <!-- Formulario -->
-    <div class="card">
-      <h2 class="card-title">📅 Reservá tu turno</h2>
-      <form action="/agregar" method="POST">
-        <div class="form-grid">
-
-          <div class="form-group">
-            <label for="nombre">Nombre y apellido <span class="required">*</span></label>
-            <input type="text" id="nombre" name="nombre" placeholder="Ej: María González" required>
-          </div>
-
-          <div class="form-group">
-            <label for="telefono">Teléfono <span class="required">*</span></label>
-            <input type="tel" id="telefono" name="telefono" placeholder="Ej: 2604123456" required>
-          </div>
-
-          <div class="form-group">
-            <label for="fecha">Fecha <span class="required">*</span></label>
-            <input type="date" id="fecha" name="fecha" required>
-          </div>
-
-          <div class="form-group">
-            <label for="hora">Hora <span class="required">*</span></label>
-            <select id="hora" name="hora" required>
-              <option value="">Seleccioná un horario</option>
-              <option value="08:00">08:00</option>
-              <option value="08:30">08:30</option>
-              <option value="09:00">09:00</option>
-              <option value="09:30">09:30</option>
-              <option value="10:00">10:00</option>
-              <option value="10:30">10:30</option>
-              <option value="11:00">11:00</option>
-              <option value="11:30">11:30</option>
-              <option value="12:00">12:00</option>
-              <option value="14:00">14:00</option>
-              <option value="14:30">14:30</option>
-              <option value="15:00">15:00</option>
-              <option value="15:30">15:30</option>
-              <option value="16:00">16:00</option>
-              <option value="16:30">16:30</option>
-              <option value="17:00">17:00</option>
-              <option value="17:30">17:30</option>
-              <option value="18:00">18:00</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="obra_social">Obra social / Prepaga</label>
-            <input type="text" id="obra_social" name="obra_social" placeholder="Ej: OSDE, Swiss Medical, Particular">
-          </div>
-
-          <div class="form-group">
-            <label for="motivo">Motivo de consulta</label>
-            <input type="text" id="motivo" name="motivo" placeholder="Ej: Control, dolor de cabeza...">
-          </div>
-
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-          📲 Confirmar turno por WhatsApp
-        </button>
-      </form>
-    </div>
-
-    <div class="footer">
-      Al confirmar, se abrirá WhatsApp para completar la reserva con el médico.
-    </div>
-
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏥</div>
+    {{ nombre_consultorio }}
   </div>
+  <a href="/login" class="header-link">🔐 Panel médico</a>
+</header>
 
-  <script>
-    // Bloquear fechas pasadas
-    const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('fecha').setAttribute('min', hoy);
-  </script>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flashes">
+    {% for cat, msg in messages %}
+      <div class="flash {{ cat }}" onclick="this.remove()">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<main>
+  <div class="card">
+    <div class="steps">
+      <div class="step active" id="step1">1 · Elegí fecha y hora</div>
+      <div class="step" id="step2">2 · Tus datos</div>
+      <div class="step" id="step3">3 · Confirmar</div>
+    </div>
+
+    <form action="/agregar" method="POST" id="form-turno">
+
+      <!-- ── SECCIÓN 1: Calendario ── -->
+      <div id="seccion-cal">
+        <div class="cal-header">
+          <div class="cal-fecha-label" id="semana-label">Cargando...</div>
+          <div class="cal-nav">
+            <button type="button" class="cal-btn" id="btn-prev" onclick="cambiarSemana(-1)">‹</button>
+            <button type="button" class="cal-btn" id="btn-next" onclick="cambiarSemana(1)">›</button>
+          </div>
+        </div>
+
+        <div class="semana" id="semana-grid"></div>
+
+        <div class="horarios-titulo">Horarios disponibles</div>
+        <div class="horarios-grid" id="horarios-grid">
+          <div style="color:var(--muted);font-size:.85rem;grid-column:1/-1;padding:.5rem 0">
+            Seleccioná un día primero
+          </div>
+        </div>
+
+        <div class="leyenda">
+          <span><div class="dot dot-libre"></div> Disponible</span>
+          <span><div class="dot dot-ocupado"></div> Ocupado</span>
+          <span><div class="dot dot-pasado"></div> No disponible</span>
+        </div>
+
+        <input type="hidden" name="fecha" id="fecha-input" />
+        <input type="hidden" name="hora"  id="hora-input"  />
+
+        <div style="margin-top:1.25rem">
+          <button type="button" class="btn-submit" id="btn-continuar" onclick="irAPaso2()" disabled>
+            Continuar →
+          </button>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 2: Datos del paciente ── -->
+      <div id="seccion-datos" style="display:none">
+        <div class="resumen visible" id="resumen-box">
+          <p>📅 <strong id="r-fecha"></strong> &nbsp;·&nbsp; ⏰ <strong id="r-hora"></strong></p>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre y apellido *</label>
+            <input type="text" name="nombre" placeholder="Ej: María González" required maxlength="80" />
+          </div>
+          <div class="form-group">
+            <label>Teléfono *</label>
+            <input type="tel" name="telefono" placeholder="Ej: 2604123456" required pattern="[0-9]+" minlength="8" maxlength="15" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Obra social / Prepaga</label>
+            <input type="text" name="obra_social" placeholder="Ej: OSDE, PAMI, Particular" maxlength="60" />
+          </div>
+          <div class="form-group">
+            <label>Motivo de consulta</label>
+            <input type="text" name="motivo" placeholder="Ej: Control, dolor, etc." maxlength="120" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:.75rem;margin-top:.5rem">
+          <button type="button" onclick="volverPaso1()"
+            style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:.8rem;font-size:.9rem;font-weight:600;cursor:pointer;color:var(--muted)">
+            ← Volver
+          </button>
+          <button type="submit" class="btn-submit" style="flex:2">
+            📲 Confirmar por WhatsApp
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<footer>
+  {{ nombre_consultorio }} · Sistema de turnos online
+</footer>
+
+<script>
+  const HORARIOS      = {{ horarios | tojson }};
+  const DISPONIBILIDAD = {{ disponibilidad | tojson }};
+  const HOY           = {{ hoy | tojson }};
+
+  let semanaOffset = 0;   // 0 = semana actual, 1 = próxima, etc.
+  let fechaSel     = null;
+  let horaSel      = null;
+
+  // ── Semana ────────────────────────────────────────────────────────────
+  function lunes(offset) {
+    const hoy = new Date(HOY + 'T00:00:00');
+    // ir al lunes de esta semana
+    const dow = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
+    const base = new Date(hoy);
+    base.setDate(hoy.getDate() - dow + offset * 7);
+    return base;
+  }
+
+  function isoDate(d) {
+    return d.toISOString().split('T')[0];
+  }
+
+  function nombreDia(d) {
+    return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()];
+  }
+
+  function mesLabel(d) {
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return meses[d.getMonth()];
+  }
+
+  function renderSemana() {
+    const grid  = document.getElementById('semana-grid');
+    const label = document.getElementById('semana-label');
+    const inicio = lunes(semanaOffset);
+
+    grid.innerHTML = '';
+    const dias = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(inicio);
+      d.setDate(inicio.getDate() + i);
+      dias.push(d);
+    }
+
+    label.textContent = `${dias[0].getDate()} ${mesLabel(dias[0])} — ${dias[6].getDate()} ${mesLabel(dias[6])} ${dias[6].getFullYear()}`;
+
+    dias.forEach(d => {
+      const iso = isoDate(d);
+      const pasado = iso < HOY;
+      const libre  = DISPONIBILIDAD[iso] ?? (HORARIOS.length);
+      const lleno  = libre === 0;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'dia-btn' + (lleno || pasado ? ' lleno' : '') + (iso === fechaSel ? ' seleccionado' : '');
+      btn.disabled = lleno || pasado;
+      btn.innerHTML = `
+        <span class="dia-nombre">${nombreDia(d)}</span>
+        <span class="dia-num">${d.getDate()}</span>
+        <span class="dia-libre">${pasado ? '–' : lleno ? 'Lleno' : libre + ' lib.'}</span>
+      `;
+      if (!lleno && !pasado) {
+        btn.onclick = () => seleccionarDia(iso);
+      }
+      grid.appendChild(btn);
+    });
+
+    // Botón prev deshabilitado si ya estamos en semana actual
+    document.getElementById('btn-prev').disabled = semanaOffset <= 0;
+  }
+
+  function cambiarSemana(dir) {
+    if (semanaOffset + dir < 0) return;
+    semanaOffset += dir;
+    renderSemana();
+  }
+
+  // ── Selección de día ─────────────────────────────────────────────────
+  function seleccionarDia(fecha) {
+    fechaSel = fecha;
+    horaSel  = null;
+    document.getElementById('fecha-input').value = fecha;
+    document.getElementById('hora-input').value  = '';
+    document.getElementById('btn-continuar').disabled = true;
+    renderSemana();
+    cargarHorarios(fecha);
+  }
+
+  function cargarHorarios(fecha) {
+    const grid = document.getElementById('horarios-grid');
+    grid.innerHTML = '<div style="color:var(--muted);font-size:.85rem;grid-column:1/-1;padding:.5rem 0">Cargando horarios...</div>';
+
+    fetch(`/disponibilidad/${fecha}`)
+      .then(r => r.json())
+      .then(data => {
+        grid.innerHTML = '';
+        data.forEach(h => {
+          const slot = document.createElement('div');
+          slot.className = 'hora-slot' + (!h.disponible ? ' ocupado' : '');
+          slot.textContent = h.hora;
+          if (h.disponible) {
+            slot.onclick = () => seleccionarHora(slot, h.hora);
+          }
+          grid.appendChild(slot);
+        });
+      })
+      .catch(() => {
+        grid.innerHTML = '<div style="color:var(--red);font-size:.85rem;grid-column:1/-1">Error cargando horarios. Recargá la página.</div>';
+      });
+  }
+
+  // ── Selección de hora ─────────────────────────────────────────────────
+  function seleccionarHora(el, hora) {
+    document.querySelectorAll('.hora-slot').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    horaSel = hora;
+    document.getElementById('hora-input').value = hora;
+    document.getElementById('btn-continuar').disabled = false;
+  }
+
+  // ── Pasos ─────────────────────────────────────────────────────────────
+  function irAPaso2() {
+    if (!fechaSel || !horaSel) return;
+
+    // Actualizar resumen
+    const fObj = new Date(fechaSel + 'T00:00:00');
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    document.getElementById('r-fecha').textContent =
+      `${dias[fObj.getDay()]} ${fObj.getDate()} de ${meses[fObj.getMonth()]}`;
+    document.getElementById('r-hora').textContent = horaSel;
+
+    document.getElementById('seccion-cal').style.display   = 'none';
+    document.getElementById('seccion-datos').style.display = 'block';
+    document.getElementById('step1').className = 'step done';
+    document.getElementById('step2').className = 'step active';
+  }
+
+  function volverPaso1() {
+    document.getElementById('seccion-datos').style.display = 'none';
+    document.getElementById('seccion-cal').style.display   = 'block';
+    document.getElementById('step1').className = 'step active';
+    document.getElementById('step2').className = 'step';
+  }
+
+  // Auto-dismiss flashes
+  setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(f => {
+      f.style.transition = 'opacity .3s';
+      f.style.opacity = '0';
+      setTimeout(() => f.remove(), 300);
+    });
+  }, 4500);
+
+  // Init
+  renderSemana();
+</script>
 
 </body>
 </html>
